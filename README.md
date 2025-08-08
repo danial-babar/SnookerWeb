@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Snooker Stats - Professional Snooker Statistics
+
+A modern Next.js application for tracking and analyzing professional snooker player statistics, rankings, and match results.
+
+## Features
+
+- **Player Statistics**: Comprehensive stats for professional snooker players including rankings, win rates, and break records
+- **Interactive Search**: Search players by name or country
+- **Responsive Design**: Works perfectly on desktop and mobile devices
+- **Modern UI**: Clean, professional interface with Tailwind CSS
+- **TypeScript**: Full type safety throughout the application
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout with header/footer
+│   ├── page.tsx           # Home page
+│   ├── player-stats/      # Player statistics page
+│   │   └── page.tsx
+│   └── globals.css        # Global styles
+├── components/            # Reusable components
+│   ├── layout/           # Layout components
+│   │   ├── Header.tsx    # Navigation header
+│   │   └── Footer.tsx    # Site footer
+│   └── ui/               # UI components (future)
+├── lib/                  # Utility functions
+│   └── utils.ts          # Common utilities
+├── types/                # TypeScript type definitions
+│   └── index.ts          # Application types
+└── hooks/                # Custom React hooks (future)
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+ 
+- npm or yarn
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-To learn more about Next.js, take a look at the following resources:
+## Available Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technology Stack
 
-## Deploy on Vercel
+- **Framework**: Next.js 15.4.6 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4.0
+- **Icons**: Lucide React
+- **UI Components**: Custom components with Tailwind
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Pages and Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/` - Home page with overview and navigation
+- `/player-stats` - Player statistics with search and detailed views
+- `/rankings` - World rankings (placeholder)
+- `/tournaments` - Tournament results (placeholder)
+- `/matches` - Match analysis (placeholder)
+
+## Key Components
+
+### Header Component
+- Responsive navigation with mobile menu
+- Active route highlighting
+- Professional branding
+
+### Footer Component
+- Site links and information
+- Responsive grid layout
+- Copyright information
+
+### PlayerStats Page
+- Interactive player list with search
+- Detailed player statistics panel
+- Sample data for demonstration
+
+## Future Enhancements
+
+- Real API integration for live data
+- Additional pages (Rankings, Tournaments, Matches)
+- User authentication and favorites
+- Advanced filtering and sorting
+- Data visualization charts
+- Player comparison features
+
+## Development Notes
+
+- Uses Next.js App Router for modern routing
+- Fully responsive design with mobile-first approach
+- TypeScript for type safety
+- Modular component architecture
+- Proper folder structure for scalability
+
+## License
+
+This project is for demonstration purposes.
+
+# SnookerWeb
