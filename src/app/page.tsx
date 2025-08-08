@@ -1,103 +1,98 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Trophy, Users, Calendar, BarChart3 } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const features = [
+    {
+      name: "Player Statistics",
+      description: "Comprehensive stats for professional snooker players including rankings, win rates, and break records.",
+      icon: Users,
+      href: "/player-stats",
+    },
+    {
+      name: "Tournament Results",
+      description: "Latest tournament results, schedules, and historical data from major snooker competitions.",
+      icon: Trophy,
+      href: "/tournaments",
+    },
+    {
+      name: "Match Analysis",
+      description: "Detailed match breakdowns, head-to-head records, and performance analytics.",
+      icon: BarChart3,
+      href: "/matches",
+    },
+    {
+      name: "World Rankings",
+      description: "Current world rankings and ranking history for all professional players.",
+      icon: Calendar,
+      href: "/rankings",
+    },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="bg-white">
+      {/* Hero section */}
+      <div className="relative isolate px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl py-10 sm:py-18 lg:py-28">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              Snooker Game
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Your comprehensive source for snooker player statistics, tournament results, 
+              and match analysis. Track the performance of your favorite players and stay 
+              updated with the latest rankings.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Link
+                href="/player-stats"
+                className="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+              >
+                View Player Stats
+              </Link>
+              <Link
+                href="/new-game"
+                className="text-sm font-semibold leading-6 text-gray-900 hover:text-green-600"
+              >
+                Start New Game <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+   
+      {/* <div className="py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:text-center">
+            <h2 className="text-base font-semibold leading-7 text-green-600">Everything Snooker</h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Comprehensive Snooker Data
+            </p>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Access detailed statistics, rankings, and analysis for professional snooker. 
+              From player performance to tournament results, we have it all.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
+            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
+              {features.map((feature) => (
+                <div key={feature.name} className="relative pl-16">
+                  <dt className="text-base font-semibold leading-7 text-gray-900">
+                    <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-green-600">
+                      <feature.icon className="h-6 w-6 text-white" aria-hidden="true" />
+                    </div>
+                    <Link href={feature.href} className="hover:text-green-600">
+                      {feature.name}
+                    </Link>
+                  </dt>
+                  <dd className="mt-2 text-base leading-7 text-gray-600">{feature.description}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </div> */}
     </div>
   );
 }
