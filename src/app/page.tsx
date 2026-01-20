@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Trophy, Users, Calendar, BarChart3 } from "lucide-react";
 
 export default function Home() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const features = [
     {
       name: "Player Statistics",

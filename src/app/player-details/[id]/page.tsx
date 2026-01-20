@@ -1,20 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import {
   ArrowLeft,
-  Trophy,
-  Target,
-  TrendingUp,
-  Users,
-  Play,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import { Player } from "@/types";
+import { Match } from "@/types";
 import { sampleMatches, samplePlayers } from "@/constant/DummyData";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Pagination from "@/components/ui/Pagination";
 import MatchTableSkeleton from "@/components/ui/MatchTableSkeleton";
 
@@ -27,9 +22,71 @@ type SortField =
 type SortDirection = "asc" | "desc";
 // Sample data (you can move this to a shared file later)
 
+// SVG Icon component - moved outside to prevent recreation on each render
+const SvgIcon = ({ src, className }: { src: string; className?: string }) => {
+  // Normalize the source path
+  const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+  
+  // Detect basePath and set icon source
+  // Initialize with basePath (for static export), will be adjusted in useEffect if needed
+  const [iconSrc, setIconSrc] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const basePath = path.startsWith('/team_dashboard') ? '/team_dashboard' : '';
+      return `${basePath}${normalizedSrc}`;
+    }
+    // Server-side: default to basePath for static export
+    return `/team_dashboard${normalizedSrc}`;
+  });
+  const fallbackRef = useRef(false);
+  
+  useEffect(() => {
+    // Re-check basePath on mount/remount to ensure correct path
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const basePath = path.startsWith('/team_dashboard') ? '/team_dashboard' : '';
+      const newSrc = `${basePath}${normalizedSrc}`;
+      setIconSrc((currentSrc) => {
+        if (newSrc !== currentSrc) {
+          fallbackRef.current = false; // Reset fallback on path change
+          return newSrc;
+        }
+        return currentSrc;
+      });
+    }
+  }, [normalizedSrc]);
+  
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={iconSrc}
+      alt=""
+      className={className}
+      style={{ 
+        filter: "brightness(0) invert(1) opacity(0.8)", 
+        display: "block",
+        objectFit: "contain"
+      }}
+      onError={(e) => {
+        if (!fallbackRef.current) {
+          // Try fallback - if we used basePath, try without it, and vice versa
+          const currentBasePath = iconSrc.includes('/team_dashboard') ? '/team_dashboard' : '';
+          const fallbackSrc = currentBasePath ? normalizedSrc : `/team_dashboard${normalizedSrc}`;
+          console.log("SVG failed, trying fallback:", fallbackSrc);
+          setIconSrc(fallbackSrc);
+          fallbackRef.current = true;
+        } else {
+          console.error("Failed to load SVG:", iconSrc);
+        }
+      }}
+    />
+  );
+};
+
 export default function PlayerDetail() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const playerId = params.id as string;
   const player = samplePlayers.find((p) => p.id === playerId);
   const [sortField, setSortField] = useState<SortField>("date");
@@ -37,6 +94,25 @@ export default function PlayerDetail() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
+
+  // Add this function to simulate loading
+  const simulateLoading = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000); // 1 second loading simulation
+  };
+
+  // Add this useEffect to trigger loading when page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      simulateLoading();
+    }
+  }, [currentPage]);
+  
+  // Determine basePath once based on current pathname
+  const basePath = pathname?.startsWith('/team_dashboard') ? '/team_dashboard' : '';
+
   if (!player) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -60,8 +136,9 @@ export default function PlayerDetail() {
   //     setSortDirection("asc");
   //   }
   // };
-  const sortedMatches = [...sampleMatches].sort((a: any, b: any) => {
-    let aValue: any, bValue: any;
+  const sortedMatches = [...sampleMatches].sort((a: Match, b: Match) => {
+    let aValue: string | number | Date;
+    let bValue: string | number | Date;
 
     switch (sortField) {
       case "date":
@@ -92,21 +169,6 @@ export default function PlayerDetail() {
     if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
-
-  // Add this function to simulate loading
-  const simulateLoading = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000); // 1 second loading simulation
-  };
-
-  // Add this useEffect to trigger loading when page changes
-  useEffect(() => {
-    if (currentPage > 1) {
-      simulateLoading();
-    }
-  }, [currentPage]);
 
   // Calculate pagination values
   const totalPages = Math.ceil(sortedMatches.length / itemsPerPage);
@@ -147,6 +209,7 @@ export default function PlayerDetail() {
       />
     );
   };
+
   const StatCard = ({
     icon: Icon,
     title,
@@ -155,7 +218,7 @@ export default function PlayerDetail() {
     fromClr = "#020123",
     toClr = "#1a4998",
   }: {
-    icon: any;
+    icon: string | React.ComponentType<{ className?: string }>;
     title: string;
     value: string | number;
     subtitle?: string;
@@ -173,7 +236,11 @@ export default function PlayerDetail() {
       >
         <div className="flex items-center ">
           <div className="absolute right-0 bottom-0 bg-[#00000030] p-1 rounded-br-lg rounded-tl-lg">
-            <Icon className="h-6 w-6 lg:w-10 lg:h-10 text-blue-200" />
+            {typeof Icon === "string" ? (
+              <SvgIcon src={Icon} className="h-6 w-6 lg:w-10 lg:h-10" />
+            ) : (
+              <Icon className="h-6 w-6 lg:w-10 lg:h-10 text-blue-200" />
+            )}
           </div>
           <div className="ml-1">
             <p className="text-sm font-medium text-blue-200">{title}</p>
@@ -276,34 +343,34 @@ export default function PlayerDetail() {
         {/* Statistics Grid */}
         <div className="space-y-4">
           <StatCard
-            icon={Play}
+            icon="/matches.svg"
             title="Matches Played"
             value={player.matchesPlayed}
           />
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              icon={Target}
+              icon="/score.svg"
               title="Life time score"
               value={player.lifetimeScore}
               fromClr={"#4b0082"}
               toClr={"#663399"}
             />
             <StatCard
-              icon={TrendingUp}
+              icon="/average.svg"
               title="Average score"
               value={player.averageScore}
               fromClr={"#003301"}
               toClr={"#004d02"}
             />
             <StatCard
-              icon={Trophy}
+              icon="/century.svg"
               title={player?.centuries > 1 ? "Centuries" : "Century"}
               value={player.centuries}
               fromClr="#98841f"
               toClr="#cbb02a"
             />
             <StatCard
-              icon={Users}
+              icon="/fifty.svg"
               title={player?.fifties > 1 ? "Fifties" : "Fifty"}
               value={player.fifties}
               fromClr="#872852"
@@ -383,7 +450,7 @@ export default function PlayerDetail() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {currentMatches.map((match, index) => (
+                      {currentMatches.map((match) => (
                         <tr key={match.id} className="hover:bg-gray-50">
                           {/* Player Name */}
                           <td className="whitespace-nowrap text-gray-500 date-cell">

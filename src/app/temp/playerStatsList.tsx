@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { EllipsisVertical, Search, Edit, Trash2 } from "lucide-react";
+import { Search, Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { samplePlayers } from "@/constant/DummyData";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
@@ -9,8 +9,8 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 
 export default function PlayerStats() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
-  const [activePopup, setActivePopup] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<typeof samplePlayers[0] | null>(null);
+  const [activePopup, setActivePopup] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     matchId: string | null;
@@ -21,7 +21,7 @@ export default function PlayerStats() {
     matchDetails: "",
   });
   const router = useRouter();
-  const popupRef = useRef<any>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
 
   const filteredPlayers = samplePlayers.filter((player) =>
     player.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -29,8 +29,8 @@ export default function PlayerStats() {
 
   // Close popup when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: any) {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         setActivePopup(null);
       }
     }
@@ -41,17 +41,17 @@ export default function PlayerStats() {
     };
   }, []);
 
-  const handleEllipsisClick = (e: any, playerId: any) => {
+  const handleEllipsisClick = (e: React.MouseEvent, playerId: string) => {
     e.stopPropagation(); // Prevent row click
     setActivePopup(activePopup === playerId ? null : playerId);
   };
 
-  const handleEditMatch = (match: any) => {
+  const handleEditMatch = (match: typeof samplePlayers[0]) => {
     // Implement edit functionality here
     console.log("Edit match:", match);
   };
 
-  const handleDeleteMatch = (match: any) => {
+  const handleDeleteMatch = (match: typeof samplePlayers[0]) => {
     console.log("match", match);
 
     setDeleteModal({
@@ -109,7 +109,7 @@ export default function PlayerStats() {
                 <h2 className="text-lg font-medium text-gray-900">Players</h2>
               </div>
               <div className="divide-y divide-gray-200">
-                {filteredPlayers.map((player, index) => (
+                {filteredPlayers.map((player) => (
                   <div
                     key={player.id}
                     className={`p-6 hover:bg-gray-50 cursor-pointer transition-colors relative ${

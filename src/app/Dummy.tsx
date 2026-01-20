@@ -5,7 +5,6 @@ import { Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import Pagination from "@/components/ui/Pagination";
 import MatchTableSkeleton from "@/components/ui/MatchTableSkeleton";
-import { getMatchesPublic } from "@/api/APIs";
 
 type SortField =
   | "date"
@@ -22,51 +21,23 @@ export default function PlayerStats() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalMatches, setTotalMatches] = useState(0);
-  const [allMatches, setAllMatches] = useState<any>([]);
+  interface MatchItem {
+    matchId: string;
+    teamAName?: string;
+    teamBName?: string;
+    teamATotal?: number;
+    teamBTotal?: number;
+    winningTeam?: string;
+    matchStartTime?: string | number | Date;
+    matchEndTime?: string | number | Date;
+  }
+
+  const [allMatches] = useState<MatchItem[]>([]);
+  const [totalMatches] = useState(0);
   const itemsPerPage = 10;
 
   // Calculate total pages based on server-side totalMatches
   const totalPages = Math.ceil(totalMatches / itemsPerPage);
-
-  useEffect(() => {
-    getAllMatches(1);
-  }, []);
-
-  // Fetch matches when page, search, or sort changes
-  useEffect(() => {
-    if (currentPage > 0) {
-      getAllMatches(currentPage);
-    }
-  }, [currentPage, searchTerm, sortField, sortDirection]);
-
-  const getAllMatches = (pageNo: number) => {
-    setIsLoading(true);
-    
-    // Prepare API parameters (modify this based on your API structure)
-    const apiParams = {
-      page: pageNo,
-      limit: itemsPerPage,
-      search: searchTerm,
-      sortField: sortField,
-      sortDirection: sortDirection
-    };
-
-    getMatchesPublic(pageNo, apiParams) // Pass additional parameters if your API supports them
-      .then((response: any) => {
-        console.log("response while getting public matches", response);
-        setAllMatches(response?.data || []);
-        setTotalMatches(Number(response?.total_matches) || 0);
-      })
-      .catch((error: any) => {
-        console.log("error while getting public matches", error);
-        setAllMatches([]);
-        setTotalMatches(0);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -290,17 +261,16 @@ export default function PlayerStats() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {allMatches.map((match: any, index: number) => (
+                      {allMatches.map((match) => (
                         <tr key={match.matchId} className="hover:bg-gray-50">
                           <td className="whitespace-nowrap text-gray-500 date-cell">
-                            {new Date(match.matchStartTime).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}
+                            {match.matchStartTime
+                              ? new Date(match.matchStartTime).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : "N/A"}
                           </td>
                           <td className="whitespace-nowrap font-medium text-green-700 underline">
                             <Link

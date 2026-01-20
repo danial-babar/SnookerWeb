@@ -23,12 +23,21 @@ export default function PlayerStats() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [totalMatches, setTotalMatches] = useState(0);
-  const [allMatches, setAllMatches] = useState<any>([]);
+  const [allMatches, setAllMatches] = useState<Array<{
+    matchId: string;
+    teamAName?: string;
+    teamBName?: string;
+    teamATotal?: number;
+    teamBTotal?: number;
+    winningTeam?: string;
+    matchStartTime?: string;
+    matchEndTime?: string;
+  }>>([]);
   const [fetchedPages, setFetchedPages] = useState<Set<number>>(new Set([])); // Track which pages have been fetched
   const itemsPerPage = 10;
 
   // Filter matches based on search term
-  const filteredMatches = allMatches.filter((match: any) =>
+  const filteredMatches = allMatches.filter((match) =>
     match.teamAName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     match.teamBName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -42,8 +51,9 @@ export default function PlayerStats() {
   const currentPageData = filteredMatches.slice(startIndex, endIndex);
   
   // Sort only the current page's data
-  const currentMatches = [...currentPageData].sort((a: any, b: any) => {
-    let aValue: any, bValue: any;
+  const currentMatches = [...currentPageData].sort((a, b) => {
+    let aValue: string | number | undefined;
+    let bValue: string | number | undefined;
 
     switch (sortField) {
       case "date":
@@ -51,27 +61,32 @@ export default function PlayerStats() {
         bValue = b.matchStartTime;
         break;
       case "teamAName":
-        aValue = a.teamAName.toLowerCase();
-        bValue = b.teamAName.toLowerCase();
+        aValue = a.teamAName?.toLowerCase() || "";
+        bValue = b.teamAName?.toLowerCase() || "";
         break;
       case "teamBName":
-        aValue = a.teamBName.toLowerCase();
-        bValue = b.teamBName.toLowerCase();
+        aValue = a.teamBName?.toLowerCase() || "";
+        bValue = b.teamBName?.toLowerCase() || "";
         break;
       case "teamATotal":
-        aValue = a.teamATotal;
-        bValue = b.teamATotal;
+        aValue = a.teamATotal ?? 0;
+        bValue = b.teamATotal ?? 0;
         break;
       case "teamBTotal":
-        aValue = a.teamBTotal;
-        bValue = b.teamBTotal;
+        aValue = a.teamBTotal ?? 0;
+        bValue = b.teamBTotal ?? 0;
         break;
       case "winningTeam":
-        aValue = a.winningTeam.toLowerCase();
-        bValue = b.winningTeam.toLowerCase();
+        aValue = a.winningTeam?.toLowerCase() || "";
+        bValue = b.winningTeam?.toLowerCase() || "";
         break;
       default:
         return 0;
+    }
+
+    if (aValue === undefined || bValue === undefined) {
+      if (aValue === undefined && bValue === undefined) return 0;
+      return aValue === undefined ? 1 : -1;
     }
 
     if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
@@ -102,6 +117,7 @@ export default function PlayerStats() {
 
   useEffect(() => {
     getAllMatches(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getAllMatches = async (pageNo: number) => {
@@ -116,10 +132,12 @@ export default function PlayerStats() {
       console.log("response while getting public matches", response);
       
       // Append new data to existing data instead of replacing
-      setAllMatches((prevMatches:any) => {
-        const newMatches = response?.data || [];
-        const existingIds = new Set(prevMatches.map((match: any) => match.matchId));
-        const uniqueNewMatches = newMatches.filter((match: any) => !existingIds.has(match.matchId));
+      setAllMatches((prevMatches) => {
+        const newMatches = (response?.data as typeof prevMatches) || [];
+        const existingIds = new Set(prevMatches.map((match) => match.matchId));
+        const uniqueNewMatches = newMatches.filter((match) => 
+          match && typeof match === 'object' && 'matchId' in match && !existingIds.has(match.matchId)
+        );
         return [...prevMatches, ...uniqueNewMatches];
       });
       
@@ -142,7 +160,8 @@ export default function PlayerStats() {
         getAllMatches(pageNo);
       });
     }
-  }, [currentPage, totalMatches, fetchedPages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, totalMatches, fetchedPages, filteredMatches.length]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -382,17 +401,19 @@ export default function PlayerStats() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {currentMatches.map((match, index) => (
+                      {currentMatches.map((match) => (
                         <tr key={match.matchId} className="hover:bg-gray-50">
                           <td className="whitespace-nowrap text-gray-500 date-cell">
-                            {new Date(match.matchStartTime).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}
+                            {match.matchStartTime
+                              ? new Date(match.matchStartTime).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  }
+                                )
+                              : "N/A"}
                           </td>
                           <td className="whitespace-nowrap font-medium text-green-700 underline">
                             <Link

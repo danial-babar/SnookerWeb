@@ -24,8 +24,9 @@ export default function PlayerStats() {
   );
 
   // Sort the filtered players
-  const sortedPlayers = [...filteredPlayers].sort((a: any, b: any) => {
-    let aValue: any, bValue: any;
+  const sortedPlayers = [...filteredPlayers].sort((a, b) => {
+    let aValue: string | number;
+    let bValue: string | number;
 
     switch (sortField) {
       case "name":

@@ -5,17 +5,18 @@ import { getContrastTextColor } from "@/utils/GetContrastColor";
 import { getDifferenceInHours } from "@/utils/GetHoursDiff";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { MatchDetailResponse, MatchDataItem, PlayerWithScore } from "@/types";
 
 export default function MatchDetail() {
   const params = useParams();
   const matchId = params.id as string;
   const hasFetched = useRef(false);
-  const [matchData, setMatchData] = useState<any>({});
-  const [teamA, setTeamA] = useState<any>([]);
-  const [teamB, setTeamB] = useState<any>([]);
-  const [teamAPlayers, setTeamAPlayers] = useState<any>([]);
-  const [teamBPlayers, setTeamBPlayers] = useState<any>([]);
-  const [manMatch, setManMatch] = useState<any>("");
+  const [matchData, setMatchData] = useState<MatchDetailResponse["data"] | null>(null);
+  const [teamA, setTeamA] = useState<MatchDataItem[]>([]);
+  const [teamB, setTeamB] = useState<MatchDataItem[]>([]);
+  const [teamAPlayers, setTeamAPlayers] = useState<PlayerWithScore[]>([]);
+  const [teamBPlayers, setTeamBPlayers] = useState<PlayerWithScore[]>([]);
+  const [manMatch, setManMatch] = useState<PlayerWithScore | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,100 +26,132 @@ export default function MatchDetail() {
     }
   }, [matchId]);
   useEffect(() => {
-    const manOfTheMatch = () => {
+    const manOfTheMatch = (): PlayerWithScore | null => {
       if (!matchData?.winningTeam) return null;
 
+      // Normalize team names for comparison (handle trailing spaces)
+      const winningTeamNormalized = matchData.winningTeam?.trim() || "";
+      const teamANameNormalized = matchData.teamAName?.trim() || "";
+      
       const winningTeamPlayers =
-        matchData.winningTeam === matchData.teamAName
+        winningTeamNormalized === teamANameNormalized
           ? teamAPlayers
           : teamBPlayers;
 
-      if (!winningTeamPlayers.length) return null;
+      if (
+        !winningTeamPlayers ||
+        !Array.isArray(winningTeamPlayers) ||
+        !winningTeamPlayers.length
+      )
+        return null;
 
       // Find player with max score
-      return winningTeamPlayers.reduce((max: any, player: any) =>
+      return winningTeamPlayers.reduce((max, player) =>
         player.score > max.score ? player : max
       );
     };
-    setManMatch(manOfTheMatch);
-  }, [teamBPlayers]);
+    setManMatch(manOfTheMatch());
+  }, [matchData, teamAPlayers, teamBPlayers]);
   const fetchMatchDetail = (id: string) => {
     getSingleMatchPublic(id)
-      .then((response: any) => {
+      .then((response: unknown) => {
         console.log("response while fetching single match details", response);
-        setMatchData(response?.data);
+        const matchResponse = response as MatchDetailResponse;
+        const data = matchResponse?.data;
+        if (!data) return;
+        
+        setMatchData(data);
+        // Normalize team names (remove trailing spaces) for comparison
+        const teamANameNormalized = data.teamAName?.trim() || "";
+        const teamBNameNormalized = data.teamBName?.trim() || "";
+        
         setTeamA(
-          response?.data?.dataArray?.filter(
-            (item: any) => item?.team === response?.data?.teamAName
+          (data.dataArray || []).filter(
+            (item: MatchDataItem) => item?.team?.trim() === teamANameNormalized
           )
         );
         setTeamB(
-          response?.data?.dataArray?.filter(
-            (item: any) => item?.team === response?.data?.teamBName
+          (data.dataArray || []).filter(
+            (item: MatchDataItem) => item?.team?.trim() === teamBNameNormalized
           )
         );
         setTeamAPlayers(() => {
-          return response?.data?.teamA?.map((player: any) => {
-            let totalScore = 0;
-            response?.data?.dataArray?.forEach((item: any) => {
-              if (Array.isArray(item.playerScore)) {
-                item.playerScore.forEach((ps: any) => {
-                  if (item?.player && item.player.id == player.id) {
-                    totalScore += ps.score;
+          return (
+            (data.teamA || []).map((player) => {
+              let totalScore = 0;
+              // Filter dataArray by team first, then match player IDs
+              (data.dataArray || [])
+                .filter((item: MatchDataItem) => item?.team?.trim() === teamANameNormalized)
+                .forEach((item: MatchDataItem) => {
+                  if (Array.isArray(item.playerScore) && item.player) {
+                    // Convert both IDs to strings for comparison
+                    const itemPlayerId = String(item.player.id);
+                    const playerId = String(player.id);
+                    if (itemPlayerId === playerId) {
+                      item.playerScore.forEach((ps) => {
+                        totalScore += ps.score || 0;
+                      });
+                    }
                   }
                 });
-              }
-            });
 
-            return {
-              ...player,
-              score: totalScore,
-            };
-          });
+              return {
+                ...player,
+                score: totalScore,
+              };
+            })
+          );
         });
         setTeamBPlayers(() => {
-          return response?.data?.teamB?.map((player: any) => {
-            let totalScore = 0;
-            response?.data?.dataArray?.forEach((item: any) => {
-              if (Array.isArray(item.playerScore)) {
-                item.playerScore.forEach((ps: any) => {
-                  if (item?.player && item.player.id == player.id) {
-                    totalScore += ps.score;
+          return (
+            (data.teamB || []).map((player) => {
+              let totalScore = 0;
+              // Filter dataArray by team first, then match player IDs
+              (data.dataArray || [])
+                .filter((item: MatchDataItem) => item?.team?.trim() === teamBNameNormalized)
+                .forEach((item: MatchDataItem) => {
+                  if (Array.isArray(item.playerScore) && item.player) {
+                    // Convert both IDs to strings for comparison
+                    const itemPlayerId = String(item.player.id);
+                    const playerId = String(player.id);
+                    if (itemPlayerId === playerId) {
+                      item.playerScore.forEach((ps) => {
+                        totalScore += ps.score || 0;
+                      });
+                    }
                   }
                 });
-              }
-            });
 
-            return {
-              ...player,
-              score: totalScore,
-            };
-          });
+              return {
+                ...player,
+                score: totalScore,
+              };
+            })
+          );
         });
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         console.error("Error fetching match details", error);
       })
       .finally(() => setLoading(false));
   };
-  console.log("team A players", teamAPlayers);
-  console.log("team B players", teamBPlayers);
 
   // Reusable score box
-  const ScoreBox = ({ item }: { item: any }) => {
+  const ScoreBox = ({ item }: { item: MatchDataItem }) => {
     const score =
       item.playerScore?.reduce(
-        (sum: number, scoreItem: any) => sum + (scoreItem?.score || 0),
+        (sum: number, scoreItem) => sum + (scoreItem?.score || 0),
         0
       ) || 0;
+    const playerColor = item?.player?.color || "#000000";
     return (
       <div
         className="flex items-center justify-center rounded-md m-1 w-8 h-8 sm:w-10 sm:h-10 md:w-10 md:h-10"
-        style={{ backgroundColor: item?.player?.color }}
+        style={{ backgroundColor: playerColor }}
       >
         <p
           className="text-xs sm:text-sm md:text-base font-medium"
-          style={{ color: getContrastTextColor(item?.player?.color) }}
+          style={{ color: getContrastTextColor(playerColor) }}
         >
           {score}
         </p>
@@ -127,7 +160,7 @@ export default function MatchDetail() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 lg:py-8">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 bg-white lg:px-8 py-3 sm:py-5 lg:py-8">
       {loading ? (
         <Loader />
       ) : (
@@ -143,7 +176,7 @@ export default function MatchDetail() {
               </p>
             </div>
             <div className="flex flex-wrap mt-2 sm:mt-3">
-              {teamA?.map((item: any, idx: number) => (
+              {teamA?.map((item, idx) => (
                 <ScoreBox key={idx} item={item} />
               ))}
             </div>
@@ -160,7 +193,7 @@ export default function MatchDetail() {
               </p>
             </div>
             <div className="flex flex-wrap mt-2 sm:mt-3">
-              {teamB?.map((item: any, idx: number) => (
+              {teamB?.map((item, idx) => (
                 <ScoreBox key={idx} item={item} />
               ))}
             </div>
@@ -170,20 +203,20 @@ export default function MatchDetail() {
               <p className="text-[#1e910c] text-[20px] font-bold">
                 {matchData?.teamAName}
               </p>
-              {teamAPlayers?.map((player: any) => {
+              {teamAPlayers?.map((player) => {
                 return (
                   <div
                     className="flex items-center justify-between"
                     key={player?.id}
                   >
-                    <div className="flex items-center">
+                    <div className="flex items-center text-black font-semibold text-[14px]">
                       <p>{player?.name}</p>
                       <div
                         className="w-3 h-3 ml-1 rounded-sm"
                         style={{ backgroundColor: player?.color }}
                       />
                     </div>
-                    <p>{player?.score}</p>
+                   <p className="text-black font-medium text-[14px]">{player?.score}</p>
                   </div>
                 );
               })}
@@ -192,20 +225,20 @@ export default function MatchDetail() {
               <p className="text-[#1e910c] text-[20px] font-bold">
                 {matchData?.teamBName}
               </p>
-              {teamBPlayers?.map((player: any) => {
+              {teamBPlayers?.map((player) => {
                 return (
                   <div
                     className="flex items-center justify-between"
                     key={player?.id}
                   >
-                    <div className="flex items-center">
+                    <div className="flex items-center text-black font-semibold text-[14px]">
                       <p>{player?.name}</p>
                       <div
                         className="w-3 h-3 ml-1 rounded-sm"
                         style={{ backgroundColor: player?.color }}
                       />
                     </div>
-                    <p>{player?.score}</p>
+                    <p className="text-black font-medium text-[14px]">{player?.score}</p>
                   </div>
                 );
               })}

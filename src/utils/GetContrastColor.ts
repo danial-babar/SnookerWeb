@@ -1,4 +1,9 @@
-export function getContrastTextColor(backgroundColor:string) {
+export function getContrastTextColor(backgroundColor: string | undefined | null): string {
+    // Default to black if no color provided
+    if (!backgroundColor) {
+      return '#000000';
+    }
+    
     // Remove the '#' if it's a hex code and parse to integer
     const color = backgroundColor.startsWith('#') ? backgroundColor.slice(1) : backgroundColor;
     

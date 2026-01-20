@@ -37,3 +37,59 @@ export interface NavItem {
   href: string;
   description?: string;
 }
+
+// API Response Types
+export interface MatchDataItem {
+  team: string;
+  player?: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  playerScore?: Array<{
+    score: number;
+  }>;
+}
+
+export interface MatchDetailResponse {
+  data: {
+    matchId: string;
+    teamAName: string;
+    teamBName: string;
+    teamATotal: number;
+    teamBTotal: number;
+    winningTeam: string;
+    targetScore: number;
+    matchStartTime?: string;
+    matchEndTime?: string;
+    dataArray?: MatchDataItem[];
+    teamA?: Array<{
+      id: string;
+      name: string;
+      color: string;
+    }>;
+    teamB?: Array<{
+      id: string;
+      name: string;
+      color: string;
+    }>;
+  };
+}
+
+export interface PlayerWithScore {
+  id: string;
+  name: string;
+  color: string;
+  score: number;
+}
+
+export interface PublicMatch {
+  matchId: string;
+  teamAName: string;
+  teamBName: string;
+  teamATotal: number;
+  teamBTotal: number;
+  winningTeam: string;
+  matchStartTime: string;
+  matchEndTime: string;
+}
